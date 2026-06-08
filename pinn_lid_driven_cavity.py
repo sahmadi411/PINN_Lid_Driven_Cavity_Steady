@@ -7,7 +7,7 @@ Governing equations:
   x-momentum:   u·du/dx + v·du/dy = -dp/dx + (1/Re)(d²u/dx² + d²u/dy²)
   y-momentum:   u·dv/dx + v·dv/dy = -dp/dy + (1/Re)(d²v/dx² + d²v/dy²)
 
-Boundary conditions (unit square [0,1]²):
+Boundary conditions (unit square [0,1]x[0,1]):
   Top wall    (y=1): u=1, v=0   ← moving lid
   Other walls      : u=0, v=0
 """
