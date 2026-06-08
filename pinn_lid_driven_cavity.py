@@ -28,10 +28,10 @@ print(f"Device: {DEVICE}")
 
 # ── problem parameters ────────────────────────────────────────────────────────
 Re = 100          # Reynolds number
-EPOCHS = 10_000
-N_INTERIOR = 6_000   # collocation (interior) points
-N_BOUNDARY = 250     # points per wall segment
-BC_WEIGHT = 10.0     # weight for boundary-condition loss term
+EPOCHS = 3000
+N_INTERIOR = 10000   # collocation (interior) points
+N_BOUNDARY = 100     # points per wall segment
+BC_WEIGHT = 5.0     # weight for boundary-condition loss term
 LR = 1e-3
 
 
@@ -112,7 +112,7 @@ def bc_loss(model: nn.Module, n: int = N_BOUNDARY) -> torch.Tensor:
 
 
 # ── model + optimiser ─────────────────────────────────────────────────────────
-model = PINN(n_hidden=5, n_units=64).to(DEVICE)
+model = PINN(n_hidden=8, n_units=64).to(DEVICE)
 optimizer = torch.optim.Adam(model.parameters(), lr=LR)
 scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9997)
 
@@ -174,6 +174,70 @@ for epoch in range(1, EPOCHS + 1):
         plt.tight_layout()
         plt.savefig("loss_progress.png", dpi=100)
         plt.close()
+
+        # ── L-BFGS fine-tuning phase ──────────────────────────────────────────────────
+# Adam gets close; L-BFGS (quasi-Newton) uses curvature to drive PDE residual
+# much lower. It needs a FIXED point set and a closure.
+print("\nAdam phase done. Starting L-BFGS fine-tuning …")
+
+x_f_fix = torch.rand(N_INTERIOR, 1, device=DEVICE)
+y_f_fix = torch.rand(N_INTERIOR, 1, device=DEVICE)
+
+_nb  = N_BOUNDARY
+_r = lambda: torch.rand(_nb, 1, device=DEVICE)
+_z = lambda: torch.zeros(_nb, 1, device=DEVICE)
+_o = lambda: torch.ones(_nb, 1, device=DEVICE)
+bc_pts = [
+    (_r(), _z(), _z(), _z()),   # bottom  y=0
+    (_r(), _o(), _o(), _z()),   # top     y=1  (lid)
+    (_z(), _r(), _z(), _z()),   # left    x=0
+    (_o(), _r(), _z(), _z()),   # right   x=1
+]
+
+optimizer_lbfgs = torch.optim.LBFGS(
+    model.parameters(),
+    lr=1.0,
+    max_iter=5000,
+    max_eval=5500,
+    history_size=50,
+    tolerance_grad=1e-9,
+    tolerance_change=1e-12,
+    line_search_fn="strong_wolfe",
+)
+
+_it = [0]
+
+def closure():
+    optimizer_lbfgs.zero_grad()
+
+    cont, mx, my = pde_residuals(model, x_f_fix, y_f_fix)
+    loss_pde = cont.pow(2).mean() + mx.pow(2).mean() + my.pow(2).mean()
+
+    loss_bc = 0.0
+    for x_bc, y_bc, u_ref, v_ref in bc_pts:
+        out = model(x_bc, y_bc)
+        loss_bc = loss_bc + ((out[:, 0:1] - u_ref) ** 2
+                             + (out[:, 1:2] - v_ref) ** 2).mean()
+
+    p0 = model(torch.zeros(1, 1, device=DEVICE),
+               torch.zeros(1, 1, device=DEVICE))[:, 2:3]
+    loss_pref = p0.pow(2).mean()
+
+    loss = loss_pde + BC_WEIGHT * loss_bc + loss_pref
+    loss.backward()
+
+    _it[0] += 1
+    if _it[0] % 100 == 0:
+        print(f"  L-BFGS iter {_it[0]:5d}  total={loss.item():.3e}  "
+              f"pde={loss_pde.item():.3e}  bc={float(loss_bc):.3e}")
+        hist_total.append(loss.item())
+        hist_pde.append(loss_pde.item())
+        hist_bc.append(float(loss_bc))
+    return loss
+
+model.train()
+optimizer_lbfgs.step(closure)
+print(f"L-BFGS fine-tuning complete ({_it[0]} iterations).")
 
 print("\nTraining finished. Generating output figures …")
 
@@ -284,9 +348,9 @@ ghia_u   = np.array([1.0000,  0.84123,  0.78871,  0.73722,  0.68717,  0.23151,
                      0.00332, -0.13641, -0.20581, -0.21090, -0.15662, -0.10150,
                     -0.06434, -0.04775, -0.04192, -0.03717,  0.00000])
 
-ghia_v_x = np.array([0.0000, 0.0625, 0.0703, 0.0781, 0.0938, 0.1563, 0.2266,
-                     0.2344, 0.5000, 0.8047, 0.8594, 0.9063, 0.9453, 0.9531,
-                     0.9609, 0.9688, 1.0000])
+ghia_v_x = np.array([1.0000, 0.9688, 0.9609, 0.9531, 0.9453, 0.9063, 0.8594,
+                     0.8047, 0.5000, 0.2344, 0.2266, 0.1563, 0.0938, 0.0781,
+                     0.0703, 0.0625, 0.0000])
 ghia_v   = np.array([0.00000, -0.05906, -0.07391, -0.08864, -0.10313, -0.16914,
                     -0.22445, -0.24533,  0.05454,  0.17527,  0.17507,  0.16077,
                      0.12003,  0.10945,  0.10090,  0.09233,  0.00000])
