@@ -177,6 +177,45 @@ for epoch in range(1, EPOCHS + 1):
 
 print("\nTraining finished. Generating output figures …")
 
+
+# ── figure 0 — domain collocation points ─────────────────────────────────────
+torch.manual_seed(42)
+np.random.seed(42)
+
+_xi = torch.rand(N_INTERIOR, 1).numpy()
+_yi = torch.rand(N_INTERIOR, 1).numpy()
+
+_n = N_BOUNDARY
+_rnd = lambda: np.random.rand(_n, 1)
+_zer = lambda: np.zeros((_n, 1))
+_one = lambda: np.ones((_n, 1))
+
+bc_bottom = (np.hstack([_rnd(), _zer()]), "Bottom wall  (u=0, v=0)")
+bc_top    = (np.hstack([_rnd(), _one()]), "Top lid      (u=1, v=0)")
+bc_left   = (np.hstack([_zer(), _rnd()]), "Left wall    (u=0, v=0)")
+bc_right  = (np.hstack([_one(), _rnd()]), "Right wall   (u=0, v=0)")
+
+fig, ax = plt.subplots(figsize=(6, 6))
+ax.scatter(_xi, _yi, s=1.2, c="#4C72B0", alpha=0.25,
+           label=f"Interior PDE pts ({N_INTERIOR:,})")
+
+colors = ["#DD4949", "#E8963A", "#2CA02C", "#9467BD"]
+for (pts, label), col in zip([bc_bottom, bc_top, bc_left, bc_right], colors):
+    ax.scatter(pts[:, 0], pts[:, 1], s=10, c=col, zorder=3, label=label)
+
+ax.set_xlim(-0.02, 1.02)
+ax.set_ylim(-0.02, 1.02)
+ax.set_aspect("equal")
+ax.set_xlabel("x")
+ax.set_ylabel("y")
+ax.set_title(f"Collocation Points  (Re={Re})\n"
+             f"Interior: {N_INTERIOR:,}   ·   BC per wall: {N_BOUNDARY}")
+ax.legend(loc="upper left", markerscale=3, fontsize=8)
+plt.tight_layout()
+plt.savefig("collocation_points.png", dpi=150)
+plt.close()
+print("Saved: collocation_points.png")
+
 # ── evaluation grid ───────────────────────────────────────────────────────────
 model.eval()
 N_GRID = 100
