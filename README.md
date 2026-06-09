@@ -1,4 +1,4 @@
-# PINN — 2D Lid-Driven Cavity
+# PINN — Steady 2D Lid-Driven Cavity
 
 A Physics-Informed Neural Network (PINN) that solves the steady 2D incompressible Navier-Stokes equations for the lid-driven cavity problem.
 
