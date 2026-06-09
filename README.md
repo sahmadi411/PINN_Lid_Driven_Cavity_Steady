@@ -9,6 +9,10 @@ The unit square domain [0,1]x[0,1] with a moving lid on the top wall:
 - **Top wall** (y=1): u=1, v=0 (moving lid)
 - **All other walls**: u=0, v=0 (no-slip)
 
+<p align="center">
+  <img src="cavity_schematic.png" width="500"/>
+</p>
+
 Governing equations:
 ```
 Continuity:   ∂u/∂x + ∂v/∂y = 0
