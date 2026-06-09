@@ -58,7 +58,7 @@ Training uses **Adam** followed by **L-BFGS** fine-tuning (quasi-Newton) to driv
 |------|-------------|
 | `collocation_points.png` | Interior PDE points + boundary points |
 > <p align="center">
-  <img src="collocation_points.png" width="1000"/>
+  <img src="collocation_points.png" width="500"/>
 </p>
 | `final_loss.png` | Full training loss history (Adam + L-BFGS) |
 > <p align="center">
@@ -70,7 +70,7 @@ Training uses **Adam** followed by **L-BFGS** fine-tuning (quasi-Newton) to driv
 </p>
 | `streamlines.png` | Velocity magnitude + streamlines |
 > <p align="center">
-  <img src="streamlines.png" width="1000"/>
+  <img src="streamlines.png" width="500"/>
 </p>
 
 ## Validation
