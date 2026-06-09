@@ -1,10 +1,10 @@
 # PINN — 2D Lid-Driven Cavity
 
-A Physics-Informed Neural Network (PINN) that solves the 2D incompressible Navier-Stokes equations for the lid-driven cavity problem.
+A Physics-Informed Neural Network (PINN) that solves the steady 2D incompressible Navier-Stokes equations for the lid-driven cavity problem.
 
 ## Problem
 
-The unit square domain [0,1]² with a moving lid on the top wall:
+The unit square domain [0,1]x[0,1] with a moving lid on the top wall:
 
 - **Top wall** (y=1): u=1, v=0 (moving lid)
 - **All other walls**: u=0, v=0 (no-slip)
