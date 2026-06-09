@@ -69,6 +69,10 @@ Training uses **Adam** followed by **L-BFGS** fine-tuning (quasi-Newton) to driv
 Results are compared against:
 
 > Ghia, U., Ghia, K. N., & Shin, C. T. (1982). High-Re solutions for incompressible flow using the Navier-Stokes equations and a multigrid method. *Journal of Computational Physics*, 48(3), 387–411.
+>
+> <p align="center">
+  <img src="velocity_profiles.png" width="500"/>
+</p>
 
 ## Requirements
 
