@@ -26,7 +26,6 @@ The network takes (x, y) as input and outputs (u, v, p). It is trained by minimi
 
 - **PDE loss** — Navier-Stokes residuals at 10,000 random interior collocation points
 - **BC loss** — boundary condition mismatch at 100 points per wall
-- **Pressure reference** — pins p(0,0)=0 to remove gauge freedom
 
 Training uses **Adam** followed by **L-BFGS** fine-tuning (quasi-Newton) to drive the PDE residual lower after Adam plateaus.
 
@@ -46,23 +45,33 @@ Training uses **Adam** followed by **L-BFGS** fine-tuning (quasi-Newton) to driv
 | Parameter | Value |
 |-----------|-------|
 | Re | 100 |
-| Adam epochs | 3,000 |
+| Adam epochs | 2,000 |
 | Interior points | 10,000 |
 | BC points per wall | 100 |
 | BC weight | 5.0 |
 | Learning rate | 1e-3 (exponential decay γ=0.9997) |
-| L-BFGS max iter | 5,000 |
+| L-BFGS max iter | 10,000 |
 
 ## Output Files
 
 | File | Description |
 |------|-------------|
 | `collocation_points.png` | Interior PDE points + boundary points |
-| `loss_progress.png` | Live loss updated every 100 epochs |
+> <p align="center">
+  <img src="collocation_points.png" width="1000"/>
+</p>
 | `final_loss.png` | Full training loss history (Adam + L-BFGS) |
+> <p align="center">
+  <img src="final_loss.png" width="1000"/>
+</p>
 | `cavity_contours.png` | U, V, P contour maps |
+> <p align="center">
+  <img src="cavity_contours.png" width="1000"/>
+</p>
 | `streamlines.png` | Velocity magnitude + streamlines |
-| `velocity_profiles.png` | Centerline profiles vs Ghia et al. (1982) |
+> <p align="center">
+  <img src="streamlines.png" width="1000"/>
+</p>
 
 ## Validation
 
